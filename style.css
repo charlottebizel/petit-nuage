@@ -133,10 +133,17 @@ body {
 .cloud { animation: float 4s ease-in-out infinite; }
 .cloud-body { filter: drop-shadow(0 5px 0 #dbe4ff); }
 
-.rain, .sun, .rainbow, .eyes-closed, .zzz { opacity: 0; transition: opacity .6s; }
+.rain, .rainbow, .eyes-closed, .zzz { opacity: 0; transition: opacity .6s; }
 body[data-phase="work"].running .rain { opacity: 1; }
-body[data-phase="short"] .sun,
-body[data-phase="long"] .sun { opacity: 1; }
+
+/* Le soleil se cache derrière le nuage pendant le travail, il sort pendant la pause. */
+.sun {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translate(-30px, 8px) scale(0.8);
+  transition: transform 1.2s ease-in-out;
+}
+body:not([data-phase="work"]) .sun { transform: none; }
 body[data-phase="long"] .rainbow { opacity: 1; }
 body:not([data-phase="work"]) .eyes-open { opacity: 0; }
 body:not([data-phase="work"]) .eyes-closed,
@@ -152,7 +159,7 @@ body[data-phase="work"].running .drop { animation-play-state: running; }
 
 .water { transition: transform .8s ease-out; }
 
-.zzz { font-size: 16px; font-weight: 800; fill: var(--muted); }
+.zzz { font-size: 16px; font-weight: 800; fill: #ffffff; }
 body:not([data-phase="work"]) .zzz { animation: zzz 2.4s ease-in-out infinite; }
 .zzz-2 { font-size: 12px; animation-delay: .8s !important; }
 
