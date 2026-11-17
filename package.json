@@ -1,0 +1,9 @@
+{
+  "name": "petit-nuage",
+  "version": "1.0.0",
+  "description": "Minuteur de concentration : un petit nuage remplit un verre de pluie pendant que tu travailles.",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}
