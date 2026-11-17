@@ -3,6 +3,8 @@
 (function (root) {
   const DEFAULTS = { work: 25, short: 5, long: 15, longEvery: 4 };
   const LIMITS = { work: [1, 120], short: [1, 60], long: [1, 60], longEvery: [2, 10] };
+  // Partir moins longtemps que ça pendant le travail est pardonné.
+  const AWAY_GRACE_MS = 5000;
 
   function clampInt(value, [min, max], fallback) {
     const n = Math.round(Number(value));
@@ -33,6 +35,7 @@
       running: false,
       endAt: null,
       cycleCount: 0, // sessions de travail terminées depuis le chargement
+      mood: 'happy', // happy | worried | sad : l'humeur du nuage
     };
   }
 
@@ -40,19 +43,32 @@
     return state.running ? Math.max(0, state.endAt - now) : state.remaining;
   }
 
+  function isWorking(state) {
+    return state.phase === 'work' && state.running;
+  }
+
+  // Reprendre rassure un nuage inquiet ; un nuage triste le reste jusqu'à une session complète.
   function start(state, now) {
     if (state.running) return state;
-    return { ...state, running: true, endAt: now + state.remaining };
+    const mood = state.mood === 'worried' ? 'happy' : state.mood;
+    return { ...state, mood, running: true, endAt: now + state.remaining };
   }
 
+  // Une pause pendant le travail inquiète le nuage, sans le rendre triste.
   function pause(state, now) {
     if (!state.running) return state;
-    return { ...state, running: false, remaining: remainingMs(state, now), endAt: null };
+    const mood = state.phase === 'work' && state.mood === 'happy' ? 'worried' : state.mood;
+    return { ...state, mood, running: false, remaining: remainingMs(state, now), endAt: null };
   }
 
+  // Abandonner une session de travail commencée rend le nuage triste.
   function reset(state) {
+    const started =
+      state.running || state.remaining < durationMs(state.phase, state.settings, state.unitMs);
+    const mood = state.phase === 'work' && started ? 'sad' : state.mood;
     return {
       ...state,
+      mood,
       running: false,
       endAt: null,
       remaining: durationMs(state.phase, state.settings, state.unitMs),
@@ -76,11 +92,18 @@
         ...state,
         phase,
         cycleCount,
+        mood: finished === 'work' ? 'happy' : state.mood, // session complète : tout est pardonné
         running: false,
         endAt: null,
         remaining: durationMs(phase, state.settings, state.unitMs),
       },
     };
+  }
+
+  // Retour sur la page après une absence de `awayMs` millisecondes.
+  function markAway(state, awayMs) {
+    if (!isWorking(state) || awayMs < AWAY_GRACE_MS) return state;
+    return { ...state, mood: 'sad' };
   }
 
   // 0 au début de la phase, 1 à la fin.
@@ -136,7 +159,7 @@
   }
 
   const api = {
-    DEFAULTS, LIMITS, sanitizeSettings, durationMs, createState, remainingMs, start, pause,
+    DEFAULTS, LIMITS, AWAY_GRACE_MS, sanitizeSettings, isWorking, markAway, durationMs, createState, remainingMs, start, pause,
     reset, nextPhase, tick, progress, updateSettings, cyclePosition, formatTime, todayKey,
     todayCounter, addSession,
   };
