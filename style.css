@@ -141,9 +141,33 @@ body[data-phase="work"].running .rain { opacity: 1; }
   transform-box: fill-box;
   transform-origin: center;
   transform: translate(-30px, 8px) scale(0.8);
-  transition: transform 1.2s ease-in-out;
+  transition: transform 1.2s ease-in-out, opacity .8s;
 }
 body:not([data-phase="work"]) .sun { transform: none; }
+
+/* Humeur du nuage : inquiet après une pause, triste après un abandon ou un départ de la page. */
+.sky-sad, .mouth-sad, .mouth-worried, .brows-sad, .tear { opacity: 0; transition: opacity 1s; }
+.mouth-happy { transition: opacity .6s; }
+body[data-mood="worried"] .mouth-happy,
+body[data-mood="sad"] .mouth-happy { opacity: 0; }
+body[data-mood="worried"] .mouth-worried { opacity: 1; }
+body[data-mood="sad"] .sky-sad,
+body[data-mood="sad"] .mouth-sad,
+body[data-mood="sad"] .brows-sad { opacity: 1; }
+body[data-mood="sad"] .tear { opacity: 1; animation: tear 2.4s ease-in infinite; }
+body[data-mood="sad"] .sun,
+body[data-mood="sad"] .rainbow { opacity: 0; }
+
+.mood-msg {
+  margin: -6px auto 12px;
+  max-width: 320px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  color: var(--ink);
+  font-size: 14px;
+}
+body[data-mood="sad"] .mood-msg { background: #e5e7eb; }
 body[data-phase="long"] .rainbow { opacity: 1; }
 body:not([data-phase="work"]) .eyes-open { opacity: 0; }
 body:not([data-phase="work"]) .eyes-closed,
@@ -172,9 +196,14 @@ body.ding .timer-card { animation: ding .9s ease-in-out 2; }
   85%  { opacity: 1; }
   100% { transform: translate(var(--x), 232px); opacity: 0; }
 }
+@keyframes tear {
+  0%, 20% { transform: translateY(0); }
+  90% { transform: translateY(12px); opacity: 1; }
+  100% { transform: translateY(14px); opacity: 0; }
+}
 @keyframes zzz { 50% { transform: translateY(-4px); } }
 @keyframes ding { 25% { transform: rotate(-1.5deg) scale(1.02); } 75% { transform: rotate(1.5deg) scale(1.02); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cloud, .drop, .zzz, body.ding .timer-card { animation: none !important; }
+  .cloud, .drop, .zzz, .tear, body.ding .timer-card { animation: none !important; }
 }

@@ -108,3 +108,47 @@ test('compteur du jour : garde la valeur le même jour, repart à 0 le lendemain
   assert.deepEqual(T.todayCounter(c, '2026-11-18'), { date: '2026-11-18', count: 0 });
   assert.deepEqual(T.todayCounter({ date: key, count: -3 }, key), { date: key, count: 0 });
 });
+
+test('humeur : le nuage est content au départ', () => {
+  assert.equal(T.createState({}).mood, 'happy');
+});
+
+test('humeur : partir de la page pendant le travail rend triste, sauf absence courte', () => {
+  const s = T.start(T.createState({ work: 25 }), 0);
+  assert.equal(T.markAway(s, 4_999).mood, 'happy', 'moins de 5 s : pardonné');
+  assert.equal(T.markAway(s, 5_000).mood, 'sad');
+});
+
+test('humeur : partir pendant une pause ou minuteur arrêté ne compte pas', () => {
+  const idle = T.createState({ work: 25 });
+  assert.equal(T.markAway(idle, 60_000).mood, 'happy', 'minuteur pas lancé');
+  let s = T.start(T.createState({ work: 1, short: 5 }), 0);
+  s = T.start(T.tick(s, MIN).state, MIN);
+  assert.equal(s.phase, 'short');
+  assert.equal(T.markAway(s, 60_000).mood, 'happy', 'pendant la pause');
+});
+
+test('humeur : pause pendant le travail -> inquiet, reprendre -> content', () => {
+  let s = T.pause(T.start(T.createState({ work: 25 }), 0), MIN);
+  assert.equal(s.mood, 'worried');
+  s = T.start(s, 2 * MIN);
+  assert.equal(s.mood, 'happy');
+});
+
+test('humeur : recommencer une session commencée rend triste, pas une session neuve', () => {
+  assert.equal(T.reset(T.createState({ work: 25 })).mood, 'happy');
+  const running = T.start(T.createState({ work: 25 }), 0);
+  assert.equal(T.reset(running).mood, 'sad');
+  const paused = T.pause(running, MIN);
+  assert.equal(T.reset(paused).mood, 'sad');
+});
+
+test('humeur : triste reste triste en reprenant, une session complète console', () => {
+  let s = T.markAway(T.start(T.createState({ work: 1 }), 0), 10_000);
+  assert.equal(s.mood, 'sad');
+  s = T.start(T.pause(s, 20_000), 30_000);
+  assert.equal(s.mood, 'sad', 'reprendre ne suffit pas');
+  const r = T.tick(s, 2 * MIN);
+  assert.equal(r.finished, 'work');
+  assert.equal(r.state.mood, 'happy');
+});

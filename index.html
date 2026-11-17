@@ -6,7 +6,7 @@
   <title>Petit Nuage</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-phase="work">
+<body data-phase="work" data-mood="happy">
   <div id="demo-banner" class="demo-banner" hidden>Mode démo : 1 minute = 1 seconde</div>
 
   <header class="top">
@@ -30,10 +30,15 @@
             <stop offset="0" stop-color="#5fb4f5" />
             <stop offset="1" stop-color="#bfe6ff" />
           </linearGradient>
+          <linearGradient id="sky-sad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4b5563" />
+            <stop offset="1" stop-color="#9ca3af" />
+          </linearGradient>
         </defs>
 
         <g clip-path="url(#scene-clip)">
         <rect class="sky" x="0" y="0" width="300" height="360" fill="url(#sky)" />
+        <rect class="sky-sad" x="0" y="0" width="300" height="360" fill="url(#sky-sad)" />
         <path class="hill" d="M0 318 Q80 292 160 310 T300 300 V360 H0 Z" fill="#bbf7d0" />
         <path d="M0 336 Q90 318 180 332 T300 326 V360 H0 Z" fill="#86efac" />
 
@@ -82,7 +87,14 @@
           </g>
           <ellipse cx="120" cy="110" rx="8" ry="4.5" fill="#fda4af" opacity="0.8" />
           <ellipse cx="178" cy="110" rx="8" ry="4.5" fill="#fda4af" opacity="0.8" />
-          <path d="M142 110 Q149 117 156 110" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round" />
+          <path class="mouth-happy" d="M142 110 Q149 117 156 110" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round" />
+          <path class="mouth-sad" d="M142 115 Q149 108 156 115" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round" />
+          <ellipse class="mouth-worried" cx="149" cy="112" rx="3.5" ry="4" fill="#334155" />
+          <g class="brows-sad" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round">
+            <path d="M125 89 L138 85" />
+            <path d="M160 85 L173 89" />
+          </g>
+          <path class="tear" d="M128 106 C126 110 125 112 125 113.5 A3 3 0 0 0 131 113.5 C131 112 130 110 128 106 Z" fill="#7dd3fc" stroke="#38bdf8" stroke-width="0.8" />
           <text class="zzz" x="76" y="66">z</text>
           <text class="zzz zzz-2" x="64" y="52">z</text>
         </g>
@@ -102,6 +114,7 @@
       </svg>
 
       <p id="time" class="time">25:00</p>
+      <p id="mood-msg" class="mood-msg" hidden></p>
 
       <div class="controls">
         <button id="toggle" class="btn btn-main" type="button">Démarrer</button>
@@ -131,6 +144,7 @@
         <ul>
           <li><strong>Pas de téléphone pendant la pluie.</strong> Le cerveau met du temps à se reconcentrer après chaque interruption.</li>
           <li><strong>Prends vraiment la pause.</strong> Se lever, boire un verre d'eau : le soleil sort, le nuage dort, toi aussi tu souffles.</li>
+          <li><strong>Reste sur la page.</strong> Si tu pars plus de 5 secondes ou si tu abandonnes la session, le nuage devient triste et le ciel s'assombrit. Il retrouve le sourire quand tu termines une session complète.</li>
           <li><strong>Une grande pause toutes les 4 sessions.</strong> Après environ 2 heures, une pause plus longue (arc-en-ciel) évite la fatigue.</li>
         </ul>
       </section>

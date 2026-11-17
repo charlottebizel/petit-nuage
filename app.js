@@ -5,6 +5,11 @@
   const unitMs = demo ? 1000 : 60000;
 
   const LABELS = { work: 'Concentration', short: 'Petite pause', long: 'Grande pause' };
+  const MOOD_MESSAGES = {
+    happy: '',
+    worried: 'Le petit nuage se demande si tu reviens vite…',
+    sad: 'Le petit nuage t’attendait… Termine une session complète pour lui rendre le sourire.',
+  };
   const WATER_DROP_PX = 108; // verre vide : l'eau est décalée sous le fond
 
   const store = {
@@ -28,12 +33,14 @@
     todayCount: document.getElementById('today-count'),
     todayWord: document.getElementById('today-word'),
     water: document.getElementById('water'),
+    moodMsg: document.getElementById('mood-msg'),
     form: document.getElementById('settings-form'),
   };
 
   let state = T.createState(store.get('pn-settings'), unitMs);
   let today = T.todayCounter(store.get('pn-today'), T.todayKey(new Date()));
   let audio = null;
+  let hiddenAt = null; // moment où l'onglet a été quitté
 
   // ---- Son (généré, pas de fichier) ----
   function ensureAudio() {
@@ -87,6 +94,20 @@
     render();
   });
 
+  // Quitter l'onglet (autre onglet, fenêtre réduite) pendant le travail rend le nuage triste.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      hiddenAt = Date.now();
+      return;
+    }
+    if (hiddenAt === null) return;
+    const awayMs = Date.now() - hiddenAt;
+    hiddenAt = null;
+    loop(); // d'abord : la session a peut-être fini pendant l'absence
+    state = T.markAway(state, awayMs);
+    render();
+  });
+
   function fillForm() {
     for (const [key, value] of Object.entries(state.settings)) {
       el.form.elements[key].value = value;
@@ -124,6 +145,9 @@
     const level = state.phase === 'work' ? p : 1 - p; // la pause vide le verre
 
     el.body.dataset.phase = state.phase;
+    el.body.dataset.mood = state.mood;
+    el.moodMsg.textContent = MOOD_MESSAGES[state.mood];
+    el.moodMsg.hidden = !MOOD_MESSAGES[state.mood];
     el.body.classList.toggle('running', state.running);
     el.phase.textContent = LABELS[state.phase];
     el.time.textContent = T.formatTime(remaining);
